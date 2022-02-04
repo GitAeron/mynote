@@ -18,7 +18,7 @@
 
 ### 我正在使用的命令
 
-nohup rclone sync -P --stats 1.5s -vv  /od1/  /od2/  >  /home/snoer/2022_02_03_rclone_log 2>1&
+nohup rclone sync -P --stats 3s -vv  /od1/  /od2/  >  /home/snoer/2022_02_03_rclone_log 2>1&
 
 ps -aux | grep rclone  这个命令可以查看当前的所有进程，以及UUID，如果出错可以 kill UUID
 
@@ -51,6 +51,30 @@ ExecStart=/rclone_path mount remote:/path   /local_path   --umask 0000  \
  --vfs-cache-mode writes   \
  --vfs-read-chunk-size 5000M   \
  --vfs-read-chunk-size-limit 10G \
+Restart=on-abort
+
+[Install]
+WantedBy=default.target
+EOF
+
+
+
+### vps
+
+#### vps_同步
+
+nohup rclone sync -P --stats 3s -vv  od1:/Visual_Media/  od2:/Visual_Media/   >  /2022_02_03_rclone_log 2>1&
+
+#### vps_挂载
+cat > /etc/systemd/system/rclone1.service << EOF
+[Unit]
+Description=Rclone
+After=network-online.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/rclone/rclone mount od1:/   /od1   --umask 0000   --default-permissions    --allow-non-empty   --transfers 5    --buffer-size 250M    --low-level-retries 200    --dir-cache-time 12h    --vfs-cache-mode writes    --vfs-read-chunk-size 50M    --vfs-read-chunk-size-limit 250M
 Restart=on-abort
 
 [Install]
